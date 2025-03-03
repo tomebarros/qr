@@ -5,50 +5,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembaca QR Code</title>
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
-    <!-- <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
-
-
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
 </head>
 
 <body>
     <h1>Scan QR Code</h1>
     <div id="reader" style="width: 300px;"></div>
-    <p>Hasil: <span id="result">Belum ada hasil</span></p>
+    <button id="resultButton" style="display: none;">Lihat Hasil</button>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            if (typeof Html5Qrcode === "undefined") {
-                console.error("Library html5-qrcode belum dimuat!");
-                return;
+        function onScanSuccess(decodedText, decodedResult) {
+            let resultButton = document.getElementById('resultButton');
+            resultButton.innerText = "Hasil: " + decodedText;
+            resultButton.style.display = "block";
+        }
+
+        function onScanFailure(error) {
+            console.warn(`Scan gagal: ${error}`);
+        }
+
+        let html5QrCode = new Html5Qrcode("reader");
+
+        Html5Qrcode.getCameras().then(cameras => {
+            if (cameras.length > 0) {
+                html5QrCode.start(
+                    cameras[0].id,
+                    { fps: 10, qrbox: 250 },
+                    onScanSuccess,
+                    onScanFailure
+                );
             }
-
-            function onScanSuccess(decodedText) {
-                document.getElementById('result').innerText = decodedText;
-            }
-
-            function onScanFailure(error) {
-                console.warn(`Scan gagal: ${error}`);
-            }
-
-            let html5QrCode = new Html5Qrcode("reader");
-
-            Html5Qrcode.getCameras().then(cameras => {
-                if (cameras.length > 0) {
-                    html5QrCode.start(
-                        cameras[0].id,
-                        { fps: 10, qrbox: 250 },
-                        onScanSuccess,
-                        onScanFailure
-                    );
-                }
-            }).catch(err => {
-                console.error("Tidak dapat mengakses kamera: ", err);
-            });
+        }).catch(err => {
+            console.error("Tidak dapat mengakses kamera: ", err);
         });
     </script>
-
 </body>
 
 </html>
